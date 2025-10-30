@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SBI Bluechip Fund - SIP Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            border: 2px solid #e5e7eb;
+        }
+
+        .header {
+            background: white;
+            color: #1a1a1a;
+            padding: 30px 40px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .fund-info {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-right: 10px;
+            color: #1a1a1a;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .section h2 {
+            font-size: 22px;
+            margin-bottom: 25px;
+            color: #1a1a1a;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .amount-display {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #1a1a1a 0%, #1a1a1a var(--value), #e5e7eb var(--value), #e5e7eb 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .period-btn {
+            padding: 12px 24px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .period-btn.active {
+            border-color: #1a1a1a;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .result-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .result-value {
+            font-weight: 700;
+            font-size: 18px;
+            color: #1a1a1a;
+        }
+
+        .result-gain {
+            color: #1a1a1a;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            height: 320px;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .chart-tab-btn {
+            padding: 8px 20px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .chart-tab-btn.active {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+
+        .returns-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .return-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .return-period {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .return-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <span class="badge">Large Cap</span>
+                <span class="badge">Equity</span>
+                <span class="badge">High Risk</span>
+            </div>
+            <h1>SBI Bluechip Fund - Direct Plan Growth</h1>
+            <div class="fund-info">
+                <div class="info-item">
+                    <span class="info-label">NAV (29 Oct 2025)</span>
+                    <span class="info-value">₹98.76</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">3Y Annualized Return</span>
+                    <span class="info-value">+23.45%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">1D Return</span>
+                    <span class="info-value">+1.87%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fund Size</span>
+                    <span class="info-value">₹42,156 Cr</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Min. SIP Amount</span>
+                    <span class="info-value">₹500</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>📊 Monthly SIP Calculator</h2>
+
+                <div class="input-group">
+                    <label class="input-label">Monthly SIP Amount</label>
+                    <div class="amount-display">₹<span id="amount-value">5,000</span></div>
+                    <input type="range" id="amount-slider" min="500" max="100000" step="500" value="5000" oninput="updateAmount(this.value)">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Investment Period</label>
+                    <div class="period-buttons">
+                        <button class="period-btn active" onclick="selectPeriod(1)">1 Year</button>
+                        <button class="period-btn" onclick="selectPeriod(3)">3 Years</button>
+                        <button class="period-btn" onclick="selectPeriod(5)">5 Years</button>
+                        <button class="period-btn" onclick="selectPeriod(10)">10 Years</button>
+                    </div>
+                </div>
+
+                <div class="result-box">
+                    <div class="result-row">
+                        <span class="result-label">Total Investment</span>
+                        <span class="result-value" id="total-investment">₹60,000</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Expected Returns</span>
+                        <span class="result-value result-gain" id="expected-returns">₹16,458</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Maturity Value</span>
+                        <span class="result-value" id="maturity-value">₹76,458</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Expected Return %</span>
+                        <span class="result-value result-gain" id="return-percent">+27.43%</span>
+                    </div>
+                </div>
+
+                <div class="returns-info">
+                    <div class="return-card">
+                        <div class="return-period">1Y Return</div>
+                        <div class="return-value">18.5%</div>
+                    </div>
+                    <div class="return-card">
+                        <div class="return-period">3Y Return</div>
+                        <div class="return-value">23.45%</div>
+                    </div>
+                    <div class="return-card">
+                        <div class="return-period">5Y Return</div>
+                        <div class="return-value">19.8%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📈 Performance Graph</h2>
+                
+                <div class="chart-tabs">
+                    <button class="chart-tab-btn active" onclick="switchChart('1y')">1Y</button>
+                    <button class="chart-tab-btn" onclick="switchChart('3y')">3Y</button>
+                    <button class="chart-tab-btn" onclick="switchChart('5y')">5Y</button>
+                    <button class="chart-tab-btn" onclick="switchChart('all')">All</button>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAmount = 5000;
+        let currentPeriod = 1;
+        let chart;
+
+        const historicalReturns = {
+            '1y': 18.5,
+            '3y': 23.45,
+            '5y': 19.8,
+            '10y': 16.5
+        };
+
+        function generateChartData(period) {
+            const currentNAV = 98.76;
+            const months = period === '1y' ? 12 : period === '3y' ? 36 : period === '5y' ? 60 : 120;
+            const labels = [];
+            const data = [];
+            
+            // Calculate starting NAV based on historical returns
+            const annualReturn = period === '1y' ? 18.5 : period === '3y' ? 23.45 : period === '5y' ? 19.8 : 16.5;
+            const totalReturn = Math.pow(1 + annualReturn / 100, period === '1y' ? 1 : period === '3y' ? 3 : period === '5y' ? 5 : 10);
+            const startingNAV = currentNAV / totalReturn;
+            
+            let baseValue = startingNAV;
+            
+            // Generate data from past to present (growth over time)
+            for (let i = months; i >= 0; i--) {
+                if (period === '1y') {
+                    labels.push(new Date(2025, 9 - i, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+                } else {
+                    if (i % (period === '3y' ? 3 : period === '5y' ? 5 : 12) === 0) {
+                        labels.push(new Date(2025, 9 - i, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+                    }
+                }
+                
+                // Create upward trend with some volatility that ends at current NAV
+                const monthsFromStart = months - i;
+                const progress = monthsFromStart / months;
+                const targetValue = startingNAV + (currentNAV - startingNAV) * progress;
+                const volatility = Math.sin(monthsFromStart / 3) * 1.5 + (Math.random() - 0.5) * 1;
+                baseValue = targetValue + volatility;
+                
+                // Ensure last value is exactly current NAV
+                if (i === 0) {
+                    baseValue = currentNAV;
+                }
+                
+                if (period === '1y' || i % (period === '3y' ? 3 : period === '5y' ? 5 : 12) === 0) {
+                    data.push(baseValue.toFixed(2));
+                }
+            }
+            
+            return { labels, data };
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const chartData = generateChartData('1y');
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'NAV Growth',
+                        data: chartData.data,
+                        borderColor: '#1a1a1a',
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#1a1a1a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#1a1a1a',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function switchChart(period) {
+            document.querySelectorAll('.chart-tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const chartData = generateChartData(period);
+            chart.data.labels = chartData.labels;
+            chart.data.datasets[0].data = chartData.data;
+            chart.update();
+        }
+
+        function updateAmount(value) {
+            currentAmount = parseInt(value);
+            document.getElementById('amount-value').textContent = currentAmount.toLocaleString('en-IN');
+            
+            const slider = document.getElementById('amount-slider');
+            const percent = ((value - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.setProperty('--value', percent + '%');
+            
+            calculateReturns();
+        }
+
+        function selectPeriod(years) {
+            currentPeriod = years;
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            calculateReturns();
+        }
+
+        function calculateReturns() {
+            const totalInvestment = currentAmount * 12 * currentPeriod;
+            const returnRate = historicalReturns[currentPeriod + 'y'] || 18;
+            const monthlyRate = returnRate / 12 / 100;
+            const months = currentPeriod * 12;
+            const maturityValue = currentAmount * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate);
+            const returns = maturityValue - totalInvestment;
+            const returnPercent = (returns / totalInvestment) * 100;
+            
+            document.getElementById('total-investment').textContent = '₹' + totalInvestment.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            document.getElementById('expected-returns').textContent = '₹' + returns.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            document.getElementById('maturity-value').textContent = '₹' + maturityValue.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            document.getElementById('return-percent').textContent = '+' + returnPercent.toFixed(2) + '%';
+        }
+
+        window.addEventListener('load', () => {
+            initChart();
+            calculateReturns();
+            updateAmount(5000);
+        });
+    </script>
+</body>
+</html>
